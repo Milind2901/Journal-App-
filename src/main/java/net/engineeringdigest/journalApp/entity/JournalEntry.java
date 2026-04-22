@@ -1,8 +1,7 @@
 package net.engineeringdigest.journalApp.entity;
 
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -14,6 +13,7 @@ import java.time.LocalDateTime;
 //@Getter   lombok annotation that generates get method during compile time
 //@Setter   lombok annotation that generates set method during compile time
 @Data   // a single annotation to generate getters setters oneargConstructors multiargConstructors etc
+@NoArgsConstructor
 public class JournalEntry {        // this is called Plain Old Java Object ( POJO )
 
     @Id
