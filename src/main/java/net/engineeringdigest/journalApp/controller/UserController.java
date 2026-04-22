@@ -1,20 +1,16 @@
 package net.engineeringdigest.journalApp.controller;
 
 
-import net.engineeringdigest.journalApp.entity.JournalEntry;
+
 import net.engineeringdigest.journalApp.entity.User;
-import net.engineeringdigest.journalApp.respository.UserRepository;
-import net.engineeringdigest.journalApp.service.JournalEntryService;
 import net.engineeringdigest.journalApp.service.UserService;
-import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping ("/user")   // ye pure class pe mapping kardega
@@ -23,33 +19,26 @@ public class UserController {
    @Autowired
     private UserService userService ;
 
-    @GetMapping
-   public List<User> getAllUser(){
-       return userService.getAll();
+
+    // these two endppoints are authorised and work only after user has been authenticated from Database
+   @PutMapping   // Updating content based on new username and password
+   public ResponseEntity<?> updateUser(@RequestBody User user ){
+       Authentication authentication = SecurityContextHolder.getContext().getAuthentication(); // stores the context of authenticated users credentials
+       String userName = authentication.getName();
+       User userInDb = userService.findByUserName(userName);  // getting the value of the user
+       userInDb.setUserName(user.getUserName()); // setting the new username
+       userInDb.setPassword(user.getPassword()); // setting the new password
+       userService.saveNewUser(userInDb);  // saving new details
+       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
    }
 
-   @PostMapping
-   public void createUser(@RequestBody User user){
-        userService.saveEntry(user);
-   }
-
-   @GetMapping("id/{myId}")
-   public Optional<User> getUserById(@PathVariable ObjectId myId){
-       Optional<User> findById = userService.findbyid(myId);
-       return findById ;
-   }
-
-   @PutMapping("id/{myId}")
-   public User updateUser(@PathVariable ObjectId myId, User user){
-        userService.saveEntry(user);
-        return user;
-   }
-
-   @DeleteMapping("id/{myId}")
-    public boolean deleteUserById(@PathVariable ObjectId myId){
-        userService.deletebyid(myId);
-        return true;
-   }
+    @DeleteMapping   // Deleting content based on new username and password
+    public ResponseEntity<?> deleteUser(@RequestBody User user ){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication(); // stores the context of authenticated users credentials
+        String userName = authentication.getName();
+        userService.deleteByuserName(userName);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 
 
 
