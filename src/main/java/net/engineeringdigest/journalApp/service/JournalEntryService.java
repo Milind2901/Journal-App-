@@ -24,11 +24,11 @@ public class JournalEntryService {
     @Transactional  // treats the whole block of code as one operation if any step fails whole block fails
     public void saveEntry(JournalEntry journalEntry, String userName){
         try {
-            User user = userService.findByUserName(userName);// method to save journal entry into database
-            journalEntry.setDate(LocalDateTime.now());
-            JournalEntry saved = journalEntryRepo.save(journalEntry); // gets the stored journey entry into saved variable
-            user.getJournalEntries().add(saved); // adds the journal entry into the journal entry attribute of user
-            userService.saveEntry(user); // saves the user data into repository
+            User user = userService.findByUserName(userName);// gets the user from user repo by username provided, method to save journal entry into database
+            journalEntry.setDate(LocalDateTime.now()); // sets date into journal entry
+            JournalEntry saved = journalEntryRepo.save(journalEntry); // saved journal entry into repo and gets the entry into saved variable
+            user.getJournalEntries().add(saved); // adds the journal entry into the journal entry list of user
+            userService.saveEntry(user); // saves the updated user data into repository
         } catch (Exception e) {
             System.out.println(e);
             throw new RuntimeException("There is an error occured ",e);
@@ -48,11 +48,20 @@ public class JournalEntryService {
         return journalEntryRepo.findById(id);
     }
 
-    public void deletebyid(ObjectId id, String userName){
-        User user = userService.findByUserName(userName);  // find user by username and store in user
-        user.getJournalEntries().removeIf(x -> x.getId().equals(id)); // get the journal entries attached to a user and delete those which are matching the id passed
-        userService.saveEntry(user); // save the user changes
-        journalEntryRepo.deleteById(id); // remove the journal entries from journal entry repository matching the id passed
+    @Transactional
+    public boolean deletebyid(ObjectId id, String userName){
+        boolean removed = false ;
+        try {
+            User user = userService.findByUserName(userName);  // find user by username and store in user
+            removed = user.getJournalEntries().removeIf(x -> x.getId().equals(id));// get the journal entries attached to a user and delete those which are matching the id passed
+            if (removed) {
+                userService.saveEntry(user); // save the user changes
+                journalEntryRepo.deleteById(id); // remove the journal entries from journal entry repository matching the id passedre
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("An error occured while deleting the id : ", e);
+        }
+        return removed;
     }
 
 }

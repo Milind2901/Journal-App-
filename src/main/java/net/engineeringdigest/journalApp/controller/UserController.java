@@ -23,7 +23,7 @@ public class UserController {
     // these two endppoints are authorised and work only after user has been authenticated from Database
    @PutMapping   // Updating content based on new username and password
    public ResponseEntity<?> updateUser(@RequestBody User user ){
-       Authentication authentication = SecurityContextHolder.getContext().getAuthentication(); // stores the context of authenticated users credentials
+       Authentication authentication = SecurityContextHolder.getContext().getAuthentication(); // SecurityContextHolder stores the context of authenticated users credentials
        String userName = authentication.getName();
        User userInDb = userService.findByUserName(userName);  // getting the value of the user
        userInDb.setUserName(user.getUserName()); // setting the new username
